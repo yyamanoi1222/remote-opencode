@@ -4,12 +4,13 @@ import { sanitizeModel } from '../utils/stringUtils.js';
 
 const threadSseClients = new Map<string, SSEClient>();
 
-export async function createSession(port: number): Promise<string> {
+export async function createSession(port: number, agent?: string): Promise<string> {
   const url = `http://127.0.0.1:${port}/session`;
+  const body: { agent?: string } = agent ? { agent } : {};
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: '{}',
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -152,7 +153,7 @@ export function setSessionForThread(threadId: string, sessionId: string, project
   });
 }
 
-export async function ensureSessionForThread(threadId: string, projectPath: string, port: number): Promise<string> {
+export async function ensureSessionForThread(threadId: string, projectPath: string, port: number, agent?: string): Promise<string> {
   const existingSession = getSessionForThread(threadId);
 
   if (existingSession && existingSession.projectPath === projectPath) {
@@ -163,7 +164,7 @@ export async function ensureSessionForThread(threadId: string, projectPath: stri
     }
   }
 
-  const sessionId = await createSession(port);
+  const sessionId = await createSession(port, agent);
   setSessionForThread(threadId, sessionId, projectPath, port);
   return sessionId;
 }

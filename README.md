@@ -449,6 +449,61 @@ View available AI models or set the model for the current channel.
 
 ---
 
+### `/default_agent` — Set Default Agent for Project
+
+Set the default agent for a project (channel-bound). This agent will be used for all sessions in that channel unless overridden per-session.
+
+```
+/default_agent agent:general-purpose
+```
+
+| Parameter | Description                                      |
+| --------- | ------------------------------------------------ |
+| `agent`   | Agent name (e.g., `general-purpose`, `coder`)   |
+
+**How it works:**
+
+1. Bind a project to a channel with `/use alias:myproject`
+2. Set the default agent: `/default_agent agent:general-purpose`
+3. All subsequent sessions in that channel will use this agent
+4. Can be overridden per-session with `/agent` command
+
+**Priority:**
+
+- **Session agent** (`/agent`) > **Project default agent** (`/default_agent`)
+
+---
+
+### `/agent` — Set Agent for Current Session
+
+Set the agent for the current session/thread. Must be used in a thread with an active session.
+
+```
+/agent name:coder
+```
+
+| Parameter | Description                                      |
+| --------- | ------------------------------------------------ |
+| `name`    | Agent name (e.g., `general-purpose`, `coder`)   |
+
+**How it works:**
+
+1. Send a prompt with `/opencode` to start a session
+2. Run `/agent name:coder` in the thread
+3. The session will use the specified agent
+4. This overrides the project's default agent for this session only
+
+**Requirements:**
+
+- Must be used in a thread (not a channel)
+- An active session must exist in the thread
+
+**Priority:**
+
+- **Session agent** (`/agent`) > **Project default agent** (`/default_agent`)
+
+---
+
 ### `/session` — Browse & Manage Sessions
 
 Browse OpenCode CLI sessions and manage session-thread mappings. Useful for resuming previous conversations or sharing sessions across threads.

@@ -4,6 +4,7 @@ export interface ProjectConfig {
   alias: string;
   path: string;
   autoWorktree?: boolean;
+  defaultAgent?: string;
 }
 
 export interface ChannelBinding {
@@ -65,6 +66,7 @@ export interface ThreadSession {
   port: number;
   createdAt: number;
   lastUsedAt: number;
+  agent?: string;
 }
 
 export interface WorktreeMapping {

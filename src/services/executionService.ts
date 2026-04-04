@@ -81,6 +81,12 @@ export async function runPrompt(
   const preferredModel = dataStore.getChannelModel(parentChannelId);
   const modelDisplay = preferredModel ? `${preferredModel}` : 'default';
   
+  const projectAlias = dataStore.getChannelBinding(parentChannelId);
+  const sessionAgent = dataStore.getThreadSessionAgent(threadId);
+  const projectAgent = projectAlias ? dataStore.getProjectDefaultAgent(projectAlias) : undefined;
+  const preferredAgent = sessionAgent ?? projectAgent;
+  const agentDisplay = preferredAgent ? `${preferredAgent}` : 'default';
+  
   const branchName = worktreeMapping?.branchName ?? await worktreeManager.getCurrentBranch(effectivePath) ?? 'main';
   const contextHeader = buildContextHeader(branchName, modelDisplay);
   
@@ -145,7 +151,7 @@ export async function runPrompt(
       sessionManager.clearSessionForThread(threadId);
     }
 
-    sessionId = await sessionManager.ensureSessionForThread(threadId, effectivePath, port);
+    sessionId = await sessionManager.ensureSessionForThread(threadId, effectivePath, port, preferredAgent);
     
     const sseClient = new SSEClient();
     sseClient.connect(`http://127.0.0.1:${port}`);

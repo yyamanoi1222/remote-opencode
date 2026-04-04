@@ -122,6 +122,20 @@ export function setThreadSession(session: ThreadSession): void {
   saveData(data);
 }
 
+export function setThreadSessionAgent(threadId: string, agent: string): boolean {
+  const data = loadData();
+  const session = data.threadSessions?.find(s => s.threadId === threadId);
+  if (!session) return false;
+  session.agent = agent;
+  saveData(data);
+  return true;
+}
+
+export function getThreadSessionAgent(threadId: string): string | undefined {
+  const session = getThreadSession(threadId);
+  return session?.agent;
+}
+
 export function updateThreadSessionLastUsed(threadId: string): void {
   const data = loadData();
   const session = data.threadSessions?.find(s => s.threadId === threadId);
@@ -242,6 +256,20 @@ export function setProjectAutoWorktree(alias: string, enabled: boolean): boolean
 export function getProjectAutoWorktree(alias: string): boolean {
   const project = getProject(alias);
   return project?.autoWorktree ?? false;
+}
+
+export function setProjectDefaultAgent(alias: string, agent: string): boolean {
+  const data = loadData();
+  const project = data.projects.find(p => p.alias === alias);
+  if (!project) return false;
+  project.defaultAgent = agent;
+  saveData(data);
+  return true;
+}
+
+export function getProjectDefaultAgent(alias: string): string | undefined {
+  const project = getProject(alias);
+  return project?.defaultAgent;
 }
 
 // Queue Management

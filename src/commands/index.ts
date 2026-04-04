@@ -13,6 +13,8 @@ import { allow } from './allow.js';
 import { diff } from './diff.js';
 import { voice } from './voice.js';
 import { session } from './session.js';
+import { default_agent } from './default_agent.js';
+import { agent } from './agent.js';
 
 export interface Command {
   data: SlashCommandBuilder;
@@ -35,3 +37,5 @@ commands.set(allow.data.name, allow);
 commands.set(diff.data.name, diff);
 commands.set(voice.data.name, voice);
 commands.set(session.data.name, session);
+commands.set(default_agent.data.name, default_agent as Command);
+commands.set(agent.data.name, agent as Command);

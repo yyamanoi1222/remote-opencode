@@ -104,6 +104,10 @@ async function handleWorktreePR(interaction: ButtonInteraction, threadId: string
   const channel = interaction.channel;
   const parentChannelId = channel?.isThread() ? (channel as ThreadChannel).parentId! : channel?.id;
   const preferredModel = parentChannelId ? dataStore.getChannelModel(parentChannelId) : undefined;
+  const projectAlias = parentChannelId ? dataStore.getChannelBinding(parentChannelId) : undefined;
+  const sessionAgent = dataStore.getThreadSessionAgent(threadId);
+  const projectAgent = projectAlias ? dataStore.getProjectDefaultAgent(projectAlias) : undefined;
+  const preferredAgent = sessionAgent ?? projectAgent;
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -111,7 +115,7 @@ async function handleWorktreePR(interaction: ButtonInteraction, threadId: string
     const port = await serveManager.spawnServe(mapping.worktreePath, preferredModel);
     await serveManager.waitForReady(port, 30000, mapping.worktreePath, preferredModel);
 
-    const sessionId = await sessionManager.ensureSessionForThread(threadId, mapping.worktreePath, port);
+    const sessionId = await sessionManager.ensureSessionForThread(threadId, mapping.worktreePath, port, preferredAgent);
 
     const prPrompt = `Create a pull request for the current branch. Include a clear title and description summarizing all changes.`;
     await sessionManager.sendPrompt(port, sessionId, prPrompt, preferredModel);
