@@ -10,9 +10,21 @@ import * as dataStore from './dataStore.js';
 import * as sessionManager from './sessionManager.js';
 import * as serveManager from './serveManager.js';
 import * as worktreeManager from './worktreeManager.js';
+import * as configStore from './configStore.js';
 import { SSEClient } from './sseClient.js';
 import { formatOutput, formatOutputForMobile, buildContextHeader } from '../utils/messageFormatter.js';
 import { processNextInQueue } from './queueManager.js';
+
+function resolveAgent(parentChannelId: string): string | undefined {
+  const channelAgent = dataStore.getChannelAgent(parentChannelId);
+  if (channelAgent) return channelAgent;
+  const projectAlias = dataStore.getChannelBinding(parentChannelId);
+  if (projectAlias) {
+    const projectAgent = dataStore.getProjectDefaultAgent(projectAlias);
+    if (projectAgent) return projectAgent;
+  }
+  return configStore.getDefaultAgent();
+}
 
 export async function runPrompt(
   channel: TextBasedChannel, 
@@ -79,10 +91,12 @@ export async function runPrompt(
   
   const effectivePath = worktreeMapping?.worktreePath ?? projectPath;
   const preferredModel = dataStore.getChannelModel(parentChannelId);
+  const preferredAgent = resolveAgent(parentChannelId);
   const modelDisplay = preferredModel ? `${preferredModel}` : 'default';
+  const agentDisplay = preferredAgent ? ` (agent: ${preferredAgent})` : '';
   
   const branchName = worktreeMapping?.branchName ?? await worktreeManager.getCurrentBranch(effectivePath) ?? 'main';
-  const contextHeader = buildContextHeader(branchName, modelDisplay);
+  const contextHeader = buildContextHeader(branchName, `${modelDisplay}${agentDisplay}`);
   
   const buttons = new ActionRowBuilder<ButtonBuilder>()
     .addComponents(
@@ -317,7 +331,7 @@ export async function runPrompt(
     }, 1000);
     
     await updateStreamMessage(`${contextHeader}\n📌 **Prompt**: ${prompt}\n\n📝 Sending prompt...`, [buttons]);
-    await sessionManager.sendPrompt(port, sessionId, prompt, preferredModel);
+    await sessionManager.sendPrompt(port, sessionId, prompt, preferredModel, preferredAgent);
     promptSent = true;
     
   } catch (error) {

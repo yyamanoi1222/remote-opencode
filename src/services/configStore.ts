@@ -18,6 +18,7 @@ export interface AppConfig {
   ports?: PortConfig;
   allowedUserIds?: string[];
   openaiApiKey?: string;
+  defaultAgent?: string;
 }
 
 const CONFIG_DIR = join(homedir(), '.remote-opencode');
@@ -130,5 +131,22 @@ export function setOpenAIApiKey(key: string): void {
 export function removeOpenAIApiKey(): void {
   const config = loadConfig();
   delete config.openaiApiKey;
+  saveConfig(config);
+}
+
+export function getDefaultAgent(): string | undefined {
+  const config = loadConfig();
+  return config.defaultAgent || undefined;
+}
+
+export function setDefaultAgent(agent: string): void {
+  const config = loadConfig();
+  config.defaultAgent = agent.trim().toLowerCase();
+  saveConfig(config);
+}
+
+export function clearDefaultAgent(): void {
+  const config = loadConfig();
+  delete config.defaultAgent;
   saveConfig(config);
 }

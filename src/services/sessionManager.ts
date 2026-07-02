@@ -52,11 +52,13 @@ export async function sendPrompt(
   sessionId: string,
   text: string,
   model?: string,
+  agent?: string,
 ): Promise<void> {
   const url = `http://127.0.0.1:${port}/session/${sessionId}/prompt_async`;
   const body: {
     parts: { type: string; text: string }[];
     model?: { providerID: string; modelID: string };
+    agent?: string;
   } = {
     parts: [{ type: "text", text }],
   };
@@ -67,6 +69,10 @@ export async function sendPrompt(
     if (parsedModel) {
       body.model = parsedModel;
     }
+  }
+
+  if (agent) {
+    body.agent = agent;
   }
 
   const response = await fetch(url, {

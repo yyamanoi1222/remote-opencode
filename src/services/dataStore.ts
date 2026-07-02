@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { DataStore, ProjectConfig, ChannelBinding, ThreadSession, WorktreeMapping, PassthroughThread, QueuedMessage, QueueSettings } from '../types/index.js';
-import { sanitizeModel } from '../utils/stringUtils.js';
+import { sanitizeModel, sanitizeAgent } from '../utils/stringUtils.js';
 
 
 const CONFIG_DIR = join(homedir(), '.remote-opencode');
@@ -61,7 +61,7 @@ export function removeProject(alias: string): boolean {
   return true;
 }
 
-export function setChannelBinding(channelId: string, projectAlias: string, model?: string): void {
+export function setChannelBinding(channelId: string, projectAlias: string, model?: string, agent?: string): void {
   const data = loadData();
   const existing = data.bindings.findIndex(b => b.channelId === channelId);
   if (existing >= 0) {
@@ -69,8 +69,11 @@ export function setChannelBinding(channelId: string, projectAlias: string, model
     if (model !== undefined) {
       data.bindings[existing].model = model;
     }
+    if (agent !== undefined) {
+      data.bindings[existing].agent = agent;
+    }
   } else {
-    data.bindings.push({ channelId, projectAlias, model });
+    data.bindings.push({ channelId, projectAlias, model, agent });
   }
   saveData(data);
 }
@@ -89,6 +92,36 @@ export function setChannelModel(channelId: string, model: string): boolean {
 export function getChannelModel(channelId: string): string | undefined {
   const binding = loadData().bindings.find(b => b.channelId === channelId);
   return sanitizeModel(binding?.model ?? '');
+}
+
+export function setChannelAgent(channelId: string, agent: string): boolean {
+  const data = loadData();
+  const existing = data.bindings.findIndex(b => b.channelId === channelId);
+  if (existing >= 0) {
+    data.bindings[existing].agent = sanitizeAgent(agent);
+    saveData(data);
+    return true;
+  }
+  return false;
+}
+
+export function getChannelAgent(channelId: string): string | undefined {
+  const binding = loadData().bindings.find(b => b.channelId === channelId);
+  return sanitizeAgent(binding?.agent ?? '');
+}
+
+export function setProjectDefaultAgent(alias: string, agent: string): boolean {
+  const data = loadData();
+  const project = data.projects.find(p => p.alias === alias);
+  if (!project) return false;
+  project.defaultAgent = sanitizeAgent(agent);
+  saveData(data);
+  return true;
+}
+
+export function getProjectDefaultAgent(alias: string): string | undefined {
+  const project = getProject(alias);
+  return project?.defaultAgent ? sanitizeAgent(project.defaultAgent) : undefined;
 }
 
 export function getChannelBinding(channelId: string): string | undefined {

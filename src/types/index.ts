@@ -5,12 +5,14 @@ export interface ProjectConfig {
   path: string;
   autoWorktree?: boolean;
   autoPassthrough?: boolean;
+  defaultAgent?: string;
 }
 
 export interface ChannelBinding {
   channelId: string;
   projectAlias: string;
   model?: string;
+  agent?: string;
 }
 
 export interface DataStore {
